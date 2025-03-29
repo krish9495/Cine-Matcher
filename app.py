@@ -11,10 +11,18 @@ import nltk
 from nltk.stem.porter import PorterStemmer
 
 # Download required NLTK data
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+@st.cache_resource
+def download_nltk_data():
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        with st.spinner('Downloading required NLTK data...'):
+            nltk.download('punkt', quiet=True)
+            nltk.download('averaged_perceptron_tagger', quiet=True)
+            nltk.download('wordnet', quiet=True)
+
+# Download NLTK data when the app starts
+download_nltk_data()
 
 def fetch_poster(movie_id):
     url = "https://api.themoviedb.org/3/movie/{}?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US".format(movie_id)
@@ -72,6 +80,7 @@ def stem(text):
         y.append(ps.stem(i))
     return " ".join(y)
 
+@st.cache_data
 def generate_pickle_files():
     # Load the datasets
     movies = pd.read_csv('Datasets/tmdb_5000_movies.csv')
